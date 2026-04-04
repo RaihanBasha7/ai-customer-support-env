@@ -1,3 +1,7 @@
+from .models import Action, Observation
+from .tasks import TASKS
+from .reward_config import REWARD_CONFIG
+
 class CustomerSupportEnv:
     def __init__(self):
         self.state = None
