@@ -2,25 +2,16 @@ from env.environment import CustomerSupportEnv
 
 env = CustomerSupportEnv()
 
-# Reset
-obs = env.reset()
-print("Initial Observation:")
-print(obs)
+def test_deterministic():
+    env = CustomerSupportEnv()
 
-# Step 1
-action = {"action_type": "classify", "content": "refund"}
-result = env.step(action)
-print("\nStep 1:")
-print(result)
+    obs1 = env.reset(task_id=0)
+    env.step({"action_type": "classify", "content": "refund"})
+    result1 = env.step({"action_type": "close", "content": ""})
 
-# Step 2
-action = {"action_type": "reply", "content": "refund processed"}
-result = env.step(action)
-print("\nStep 2:")
-print(result)
+    env = CustomerSupportEnv()
+    obs2 = env.reset(task_id=0)
+    env.step({"action_type": "classify", "content": "refund"})
+    result2 = env.step({"action_type": "close", "content": ""})
 
-# Step 3
-action = {"action_type": "close", "content": ""}
-result = env.step(action)
-print("\nStep 3:")
-print(result)
+    assert result1[3]["final_score"] == result2[3]["final_score"]

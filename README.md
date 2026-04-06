@@ -110,6 +110,75 @@ Produces a deterministic final score between **0.0 and 1.0** at episode end, eva
 
 ---
 
+---
+
+### 🔹 Deterministic Grader
+Implemented a fully deterministic grading system:
+- Same input → same output
+- No randomness in evaluation
+- Score range: **0.0 – 1.0**
+
+### 🔹 Scoring Criteria
+The final score is computed based on:
+- ✅ Correct classification (0.3)
+- ✅ Proper resolution / escalation (0.4)
+- ✅ Efficiency (number of steps) (0.3)
+
+### 🔹 Edge Case Handling
+Explicit handling for:
+- Invalid actions
+- Premature closing
+- Wrong escalation
+- Missing classification
+- Excess steps
+
+Each case:
+- Reduces score
+- Is logged for explainability
+
+---
+
+### 🔹 Explainable Evaluation
+Each episode returns:
+- Final score
+- Step-by-step reasoning
+- Human-readable logs
+
+Example:
+Correct classification
+Resolved successfully
+Efficient steps
+
+---
+
+### 🔹 Interactive UI (Gradio)
+Built a real-time UI to:
+- Simulate agent actions
+- Visualize conversation flow
+- Display rewards and final score
+- Show evaluation logs
+
+---
+
+### 🔹 Auto Agent (Rule-Based)
+Implemented an automated agent that:
+- Classifies user intent
+- Responds appropriately
+- Completes the task
+
+Used for:
+- Demonstration
+- Testing evaluation consistency
+
+---
+
+### 🔹 Real-World Design Philosophy
+- Deterministic evaluation ensures reliability
+- Flexible keyword-based understanding improves real-world usability
+- Multiple valid responses supported
+
+---
+
 ## 🔁 How It Works
 
 **Observation** (input to agent):

@@ -1,5 +1,6 @@
 def compute_score(state, task_type, max_turns):
     score = 0.0
+    logs = []
 
     conversation = state.get("conversation", [])
     classification = state.get("classification")
@@ -7,29 +8,30 @@ def compute_score(state, task_type, max_turns):
 
     steps = len(conversation)
 
-    # -------------------------
-    # 1. CLASSIFICATION (0.3)
-    # -------------------------
+    # Classification
     if classification == task_type:
         score += 0.3
-
-    # -------------------------
-    # 2. RESOLUTION (0.4)
-    # -------------------------
-    if task_type in ["complex", "edge_case"]:
-        # escalation or closure is valid
-        if status == "closed":
-            score += 0.4
+        logs.append("Correct classification")
     else:
-        if status == "closed":
-            score += 0.4
+        logs.append("Wrong classification")
 
-    # -------------------------
-    # 3. EFFICIENCY (0.3)
-    # -------------------------
+    # Resolution
+    if status == "closed":
+        score += 0.4
+        logs.append("Resolved successfully")
+    else:
+        logs.append("Not resolved")
+
+    # Efficiency
     if steps <= max_turns:
         score += 0.3
+        logs.append("Efficient steps")
     else:
-        score += max(0, 0.3 - 0.05 * (steps - max_turns))
+        penalty = 0.05 * (steps - max_turns)
+        score += max(0, 0.3 - penalty)
+        logs.append("Too many steps")
 
-    return round(min(score, 1.0), 2)
+    return {
+        "final_score": round(min(score, 1.0), 2),
+        "logs": logs
+    }
