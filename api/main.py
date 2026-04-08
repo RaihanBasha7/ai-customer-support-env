@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from env.environment import CustomerSupportEnv
+from env.models import Action
 
 app = FastAPI()
 env = CustomerSupportEnv()
@@ -13,8 +14,8 @@ def reset():
     return env.reset()
 
 @app.post("/step")
-def step(action: dict):
-    state, reward, done, info = env.step(action)
+def step(action: Action):
+    state, reward, done, info = env.step(action.dict())
 
     return {
         "state": state,

@@ -1,64 +1,83 @@
-# 🚀 AI Customer Support OpenEnv Environment
+#  AI Customer Support OpenEnv Environment
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green) ![Docker](https://img.shields.io/badge/Docker-ready-blue) ![License](https://img.shields.io/badge/License-MIT-yellow)
+<div align="center">
 
-An OpenEnv-compliant simulation environment where an LLM acts as a customer support agent, resolving issues step-by-step using actions, rewards, and task-based evaluation.
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Gradio](https://img.shields.io/badge/Gradio-UI-FF7C00?style=for-the-badge&logo=gradio&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+**A deterministic AI evaluation environment for training and testing customer support agents — step by step, action by action.**
+
+[🚀 Getting Started](#-running-locally) · [🎮 Try the UI](#-interactive-ui-gradio) · [📊 How Scoring Works](#-scoring-system) · [🐳 Docker](#-docker)
+
+</div>
 
 ---
 
-## 🎯 Objective
+## 💡 What Is This?
 
-Build a realistic environment for training and evaluating AI agents in customer support scenarios such as:
+This is **not just another chatbot demo**.
 
-- Refund requests
-- Angry customers
-- Complex multi-step issues
-- Fraud and edge cases
+It is a fully structured, **OpenEnv-compliant simulation environment** where an LLM acts as a customer support agent — resolving issues through discrete actions, tracked state, and deterministic scoring. Think of it as a reinforcement learning environment built for real-world customer service workflows.
 
-Agents are evaluated on **correctness**, **efficiency**, and **decision-making quality**.
+### ✨ What Makes It Different
+
+| Feature | Description |
+|---|---|
+| 🧠 Structured Decision-Making | Agent chooses from defined actions, not free text |
+| 🎯 Deterministic Scoring | Same input always produces the same score (0.0–1.0) |
+| ⚖️ Multi-Factor Evaluation | Correctness, efficiency, communication, and decisions |
+| 🔍 Explainable Outputs | Step-by-step reasoning logged at every turn |
+| 🧩 Modular Design | OpenEnv-compliant, cleanly separated concerns |
+
+---
+
+## 🎯 Supported Scenarios
+
+| Difficulty | Example Scenario |
+|---|---|
+| 🟢 Easy | Refund request |
+| 🟡 Medium | Angry customer |
+| 🔴 Hard | Complex multi-step issue |
+| ⚫ Edge | Fraud / ambiguous case |
 
 ---
 
 ## 🏗️ Project Structure
+
+```
 AI-CUSTOMER-SUPPORT-ENV/
 │
-├── api/                  # FastAPI endpoints (/reset, /step)
-├── env/                  # Core environment logic
-│   ├── environment.py
-│   ├── tasks.py
-│   ├── reward_config.py
-│   ├── grader.py
-│   └── models.py
+├── api/                    # FastAPI endpoints (/reset, /step)
+├── env/                    # Core environment logic
+│   ├── environment.py      # Main env class
+│   ├── tasks.py            # Task definitions
+│   ├── reward_config.py    # Reward/penalty rules
+│   ├── grader.py           # Deterministic scoring
+│   └── models.py           # Data models
 │
-├── tests/                # Test cases for the environment
-├── docker/               # Docker setup
+├── tests/                  # Test cases
+├── docker/
 │   └── Dockerfile
 │
-├── inference.py          # LLM interaction loop
-├── openenv.yaml          # OpenEnv spec (defines obs/action space & metadata)
+├── inference.py            # LLM interaction loop
+├── openenv.yaml            # OpenEnv spec (obs/action space & metadata)
 ├── requirements.txt
 └── README.md
----
-
-## ⚙️ Core Features
-
-### 🔹 Environment Design
-Simulates real-world customer support workflows and maintains full state across turns — including conversation history, ticket status, and issue classification. Supports four task difficulty levels:
-
-| Level | Example Scenario |
-|-------|-----------------|
-| Easy | Refund request |
-| Medium | Angry customer |
-| Hard | Complex multi-step issue |
-| Edge | Fraud / ambiguous case |
+```
 
 ---
+
+## ⚙️ Core Components
 
 ### 🔹 Action Space
-At each step, the agent selects one of the following actions:
+
+At each step, the agent selects one of five structured actions:
 
 | Action | Description |
-|--------|-------------|
+|---|---|
 | `classify` | Label the issue type |
 | `ask` | Request more info from the customer |
 | `reply` | Respond to the customer |
@@ -68,120 +87,65 @@ At each step, the agent selects one of the following actions:
 ---
 
 ### 🔹 Reward System
+
 Defined in `reward_config.py`. The agent is rewarded for correct, efficient resolutions and penalized for poor decisions.
 
-**Rewards:**
-- Correct classification
-- Proper resolution
-- Efficient decision-making
+**✅ Rewards**
+- Correct issue classification
+- Proper resolution or escalation
+- Efficient decision-making (fewer steps)
 
-**Penalties:**
+**❌ Penalties**
 - Invalid actions
-- Premature closing
-- Incorrect responses
-- Excess steps
+- Premature ticket closing
+- Incorrect or unhelpful responses
+- Excess steps taken
 
 ---
 
 ### 🔹 Step Engine
-Handles the core loop per turn:
-- Action validation
-- Reward assignment
-- State transitions
-- Tracks turn count, conversation history, and last action
 
----
-
-### 🔹 Explainability
-Every step logs a structured trace:
-- Action taken
-- Reward received
-- Reason for the reward
-
-This makes agent behavior transparent and easy to debug during evaluation.
-
----
-
-### 🔹 Grader System
-Produces a deterministic final score between **0.0 and 1.0** at episode end, evaluating:
-- Task completion
-- Correct action usage
-- Overall efficiency
-
----
+Handles the core loop on every turn:
+- Validates the chosen action
+- Assigns reward or penalty
+- Updates conversation state
+- Tracks turn count, history, and last action
 
 ---
 
 ### 🔹 Deterministic Grader
-Implemented a fully deterministic grading system:
-- Same input → same output
-- No randomness in evaluation
-- Score range: **0.0 – 1.0**
 
-### 🔹 Scoring Criteria
-The final score is computed based on:
-- ✅ Correct classification (0.3)
-- ✅ Proper resolution / escalation (0.4)
-- ✅ Efficiency (number of steps) (0.3)
+Produces a final score between **0.0 and 1.0** — guaranteed reproducible:
 
-### 🔹 Edge Case Handling
-Explicit handling for:
-- Invalid actions
-- Premature closing
-- Wrong escalation
-- Missing classification
-- Excess steps
+| Criterion | Weight |
+|---|---|
+| ✅ Correct classification | 0.3 |
+| ✅ Proper resolution / escalation | 0.4 |
+| ⚡ Efficiency (step count) | 0.3 |
 
-Each case:
-- Reduces score
-- Is logged for explainability
+No randomness. Same input → same score. Every time.
 
 ---
 
-### 🔹 Explainable Evaluation
-Each episode returns:
-- Final score
-- Step-by-step reasoning
-- Human-readable logs
+### 🔹 Explainability
 
-Example:
-Correct classification
-Resolved successfully
-Efficient steps
+Every episode returns a structured, human-readable evaluation:
 
----
+```
+Final Score: 0.82 ⭐
 
-### 🔹 Interactive UI (Gradio)
-Built a real-time UI to:
-- Simulate agent actions
-- Visualize conversation flow
-- Display rewards and final score
-- Show evaluation logs
-
----
-
-### 🔹 Auto Agent (Rule-Based)
-Implemented an automated agent that:
-- Classifies user intent
-- Responds appropriately
-- Completes the task
-
-Used for:
-- Demonstration
-- Testing evaluation consistency
-
----
-
-### 🔹 Real-World Design Philosophy
-- Deterministic evaluation ensures reliability
-- Flexible keyword-based understanding improves real-world usability
-- Multiple valid responses supported
+✅ Correct classification
+✅ Issue resolved
+⚡ Efficiency score: 0.25
+💬 Good customer communication
+📈 Correct escalation decision
+```
 
 ---
 
 ## 🔁 How It Works
 
-**Observation** (input to agent):
+**1. Observation** (input to agent):
 ```json
 {
   "customer_message": "I was charged twice for my order!",
@@ -190,7 +154,7 @@ Used for:
 }
 ```
 
-**Action** (agent output):
+**2. Action** (agent output):
 ```json
 {
   "action_type": "classify",
@@ -198,18 +162,44 @@ Used for:
 }
 ```
 
-The environment processes the action, updates state, returns the next observation, reward, and explanation.
+**3. Environment Response:**
+The environment validates the action, updates state, and returns the next observation + reward + explanation.
+
+---
+
+## 🎮 Interactive UI (Gradio)
+
+> 💡 **For the best experience, use the Gradio UI!**
+
+The Gradio interface lets you:
+- Simulate agent actions in real time
+- Visualize the full conversation flow
+- See rewards and step explanations live
+- View the final evaluation score and logs
+
+**To launch:**
+```bash
+pip install gradio
+python app.py
+```
+
+Then open your browser at `http://localhost:7860` and start simulating!
 
 ---
 
 ## 🧪 Running Locally
+
+**Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
 
 **Run tests:**
 ```bash
 python -m tests.test_env
 ```
 
-**Run inference loop:**
+**Run the inference loop:**
 ```bash
 python inference.py
 ```
@@ -217,6 +207,7 @@ python inference.py
 ---
 
 ## 🐳 Docker
+
 ```bash
 cd docker
 docker build -t customer-support-env .
@@ -225,14 +216,41 @@ docker run customer-support-env
 
 ---
 
+## 🔬 Edge Case Handling
+
+The environment explicitly handles and scores:
+
+| Edge Case | Effect |
+|---|---|
+| Invalid action | Score penalty + logged |
+| Premature closing | Score penalty + logged |
+| Wrong escalation | Score penalty + logged |
+| Missing classification | Score penalty + logged |
+| Excess steps | Efficiency penalty + logged |
+
+All edge cases are captured in the explainability trace for easy debugging.
+
+---
+
+## 🤖 Auto Agent (Rule-Based)
+
+A built-in rule-based agent is included for:
+- Instant demos without an LLM
+- Evaluating scoring consistency
+- Baseline benchmarking
+
+It classifies intent, responds appropriately, and completes tasks end-to-end.
+
+---
+
 ## 🎯 Hackathon Evaluation Alignment
 
 | Criterion | Status |
-|-----------|--------|
-| Real-world utility | ✅ Customer support simulation |
-| Task & grader quality | ✅ Deterministic 0–1 scoring |
-| Clean environment design | ✅ OpenEnv-compliant |
-| Code structure & modularity | ✅ Separated concerns across modules |
+|---|---|
+| Real-world utility | ✅ Realistic customer support simulation |
+| Task & grader quality | ✅ Deterministic 0.0–1.0 scoring |
+| Clean environment design | ✅ OpenEnv-compliant, modular |
+| Code structure | ✅ Separated concerns across all modules |
 | Creativity | ✅ Reward shaping + step explainability |
 
 ---
@@ -240,13 +258,19 @@ docker run customer-support-env
 ## 👥 Team
 
 | Role | Name | Responsibilities |
-|------|------|-----------------|
+|---|---|---|
 | Lead & Integration | Shaik Raihan Basha | Environment design, reward system, grader, inference loop |
-| UI/API & Deployment | Shaik Suhail | FastAPI endpoints, Hugging Face deployment, Docker setup |
+| UI / API & Deployment | Shaik Suhail | FastAPI endpoints, Hugging Face deployment, Docker setup |
 | Environment Logic | Shaik Inzamam | Step engine, state transitions, action handling |
 
 ---
 
 ## 🚀 Goal
 
-Build a realistic, testable, and explainable environment for evaluating AI agents — targeting **Top 10% selection**.
+Build a **realistic, testable, and explainable** environment for evaluating AI agents — targeting **Top 10% selection**.
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ for AI evaluation research · MIT License</sub>
+</div>

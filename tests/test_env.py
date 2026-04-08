@@ -15,3 +15,9 @@ def test_deterministic():
     result2 = env.step({"action_type": "close", "content": ""})
 
     assert result1[3]["final_score"] == result2[3]["final_score"]
+
+def test_invalid_action():
+    env = CustomerSupportEnv()
+    env.reset()
+    _, reward, _, _ = env.step({"action_type": "invalid", "content": ""})
+    assert reward < 0

@@ -16,8 +16,11 @@ def call_llm(observation):
 You are an AI agent in a structured environment.
 
 STRICT RULES:
-- You MUST follow this sequence:
-  classify → reply → close
+- Choose optimal sequence based on task:
+  refund → classify → reply → close
+  angry → classify → reply → close
+  complex → classify → reply → escalate
+  edge_case → classify → escalate
 - DO NOT repeat actions
 - DO NOT ask unnecessary questions
 - Output ONLY JSON

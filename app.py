@@ -41,7 +41,7 @@ def take_action(action_type, content):
 
         conversation = "\n".join(state["conversation"])
         final_score = info.get("final_score", "")
-        logs = "\n".join(info.get("grading_logs", []))
+        logs = "\n".join(f"• {log}" for log in info.get("grading_logs", []))
         reason = info.get("reason", "")
 
         return (
@@ -121,7 +121,7 @@ def auto_solve():
             state["customer_message"],
             conversation,
             f"Auto Agent Completed ✅",
-            f"Final Score: {final_score}",
+            f"Final Score: {final_score} / 1.0 ⭐",
             f"📌 {reason}\n\n🧠 Logs:\n{logs}"
         )
 

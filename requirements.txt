@@ -3,4 +3,3 @@ fastapi
 uvicorn
 google-generativeai
 gradio
-requests

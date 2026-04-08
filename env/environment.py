@@ -22,7 +22,9 @@ class CustomerSupportEnv:
         self.state = {
     "conversation": [],
     "status": "open",
-    "classification": None  
+    "classification": None,
+    "resolved": False,
+    "confidence": 0.0
 }
 
         self.turn = 0
@@ -75,18 +77,18 @@ class CustomerSupportEnv:
             content = content.lower()
 
             intent_keywords = {
-                "refund": ["refund", "return", "money back"],
-                "angry": ["angry", "not happy", "bad service"],
-                "complex": ["issue", "problem", "multiple"],
-                "edge_case": ["fraud", "hack", "unauthorized"]
-            }
+    "refund": ["refund", "return", "money", "charged", "payment"],
+    "angry": ["angry", "not happy", "bad service", "terrible", "worst"],
+    "complex": ["issue", "problem", "multiple", "delay", "compensation"],
+    "edge_case": ["fraud", "hack", "unauthorized", "unknown charge"]
+}
 
             matched = False
 
             for intent, keywords in intent_keywords.items():
                 if any(word in content for word in keywords):
                     if intent == task_type:
-                        reward = REWARD_CONFIG["classify_correct"]
+                        reward = REWARD_CONFIG["classify_correct"] + 0.1
                         self.state["classification"] = intent
                         reason = "Correct classification"
                     else:
@@ -149,6 +151,10 @@ class CustomerSupportEnv:
             elif task_type == "edge_case":
                 reward = REWARD_CONFIG["reply_wrong"]
                 reason = "Should escalate"
+
+            # bonus for polite tone
+            elif any(word in content for word in ["sorry", "apologize", "understand"]):
+                reward += 0.1
     
         # -------------------------
         # ESCALATE
@@ -200,7 +206,7 @@ class CustomerSupportEnv:
         # -------------------------
         # LIGHT PENALTY (SMART)
         # -------------------------
-        reward -= min(0.1, 0.02 * self.turn)
+        reward -= 0.02 * self.turn
     
         # -------------------------
         # HISTORY (EXPLAINABILITY 🔥)
@@ -238,7 +244,8 @@ class CustomerSupportEnv:
         else:
             info["final_score"] = None
             info["grading_logs"] = []
-    
+
+        info["reason"] = reason
         return {
             "customer_message": self.current_task["message"],
             "conversation": self.state["conversation"],
