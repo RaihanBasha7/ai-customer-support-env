@@ -1,0 +1,38 @@
+name: openenv
+version: "1.0.0"
+description: >
+  AI Customer Support Training Environment for the Scaler x Meta AI Hackathon.
+  An RL-style environment where an agent resolves customer support tickets.
+
+tasks:
+  - id: easy_refund
+    difficulty: easy
+    max_turns: 4
+  - id: medium_angry
+    difficulty: medium
+    max_turns: 5
+  - id: hard_complex
+    difficulty: hard
+    max_turns: 8
+  - id: edge_case
+    difficulty: edge_case
+    max_turns: 6
+
+actions:
+  - classify
+  - ask
+  - reply
+  - escalate
+  - close
+
+reward_range: [-1.0, 1.0]
+
+api:
+  host: 0.0.0.0
+  port: 7860
+  endpoints:
+    - GET  /health
+    - GET  /tasks
+    - POST /reset
+    - POST /step
+    - GET  /state
