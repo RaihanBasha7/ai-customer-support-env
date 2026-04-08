@@ -9,6 +9,7 @@ env = CustomerSupportEnv()
 def root():
     return {"message": "Customer Support Env Running"}
 
+@app.get("/reset")
 @app.post("/reset")
 def reset():
     return env.reset()
