@@ -5,14 +5,17 @@ from env.environment import CustomerSupportEnv
 app = FastAPI()
 env = CustomerSupportEnv()
 
+# ✅ ROOT (VERY IMPORTANT)
 @app.get("/")
 def root():
-    return {"status": "running"}
+    return {"message": "API is running"}
 
+# ✅ RESET
 @app.post("/reset")
 def reset():
     return env.reset()
 
+# ✅ STEP
 @app.post("/step")
 def step(action: dict):
     state, reward, done, _ = env.step(action)
@@ -22,6 +25,7 @@ def step(action: dict):
         "done": bool(done)
     }
 
+# ✅ MAIN ENTRY
 def main():
     uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
 
