@@ -1,3 +1,11 @@
+---
+title: ai-customer-support-env
+emoji: 🤖
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+---
+
 #  AI Customer Support OpenEnv Environment
 
 <div align="center">
