@@ -1,0 +1,9 @@
+name: ai-customer-support-env
+
+entry_point: inference.py
+
+environment:
+  python: "3.10"
+
+server:
+  entry_point: server.app:main
