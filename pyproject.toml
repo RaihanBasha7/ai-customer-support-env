@@ -1,0 +1,15 @@
+[project]
+name = "ai-customer-support-env"
+version = "0.1.0"
+description = "AI Customer Support Training Environment"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "openenv"
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[tool.openenv]
+entry_point = "inference.py"
