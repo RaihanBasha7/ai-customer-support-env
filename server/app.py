@@ -5,7 +5,7 @@ from env.environment import CustomerSupportEnv
 app = FastAPI()
 env = CustomerSupportEnv()
 
-# ✅ ROOT (VERY IMPORTANT)
+# ✅ ROOT
 @app.get("/")
 def root():
     return {"status": "running"}
@@ -25,7 +25,7 @@ def step(action: dict):
         "done": bool(done)
     }
 
-# ✅ MAIN ENTRY
+# ✅ ENTRY
 def main():
     uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
 
