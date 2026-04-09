@@ -8,7 +8,7 @@ env = CustomerSupportEnv()
 # ✅ ROOT (VERY IMPORTANT)
 @app.get("/")
 def root():
-    return {"message": "API is running"}
+    return {"status": "running"}
 
 # ✅ RESET
 @app.post("/reset")
