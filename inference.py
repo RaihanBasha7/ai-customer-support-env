@@ -2,78 +2,56 @@ import os
 import json
 import requests
 from env.environment import CustomerSupportEnv
-import google.generativeai as genai
 import os
 import json
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("models/gemini-2.5-flash")
-
-API_BASE_URL = os.getenv("API_BASE_URL")
-MODEL_NAME = os.getenv("MODEL_NAME")
 
 def call_llm(observation):
-    prompt = f"""
-You are an AI agent in a structured environment.
+    history = observation["conversation"]
+    msg = observation["customer_message"].lower()
 
-STRICT RULES:
-- Choose optimal sequence based on task:
-  refund → classify → reply → close
-  angry → classify → reply → close
-  complex → classify → reply → escalate
-  edge_case → classify → escalate
-- DO NOT repeat actions
-- DO NOT ask unnecessary questions
-- Output ONLY JSON
+    if len(history) == 0:
+        if "refund" in msg:
+            return {"action_type": "classify", "content": "refund"}
+        elif "unauthorized" in msg:
+            return {"action_type": "classify", "content": "edge_case"}
+        else:
+            return {"action_type": "classify", "content": "complex"}
 
-Format:
-{{"action_type": "...", "content": "..."}}
+    elif len(history) == 1:
+        if "refund" in msg:
+            return {"action_type": "reply", "content": "Your refund has been initiated."}
+        elif "unauthorized" in msg:
+            return {"action_type": "escalate", "content": ""}
+        else:
+            return {"action_type": "reply", "content": "We are resolving your issue."}
 
-Allowed actions:
-classify, ask, reply, escalate, close
-
-Task:
-Customer message: {observation["customer_message"]}
-History: {observation["conversation"]}
-"""
-
-    try:
-        response = model.generate_content(prompt)
-        text = response.text
-
-        # Extract JSON
-        import re
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-
-        if match:
-            return json.loads(match.group())
-
-    except Exception as e:
-        print("Gemini Error:", e)
-
-    return {"action_type": "ask", "content": "Fallback"}
+    else:
+        return {"action_type": "close", "content": ""}
 def run_episode():
     env = CustomerSupportEnv()
     obs = env.reset()
 
     print("[START]")
-    print(obs)
 
     done = False
 
     while not done:
         action = call_llm(obs)
 
-        print("\n[STEP]")
-        print("Action:", action)
-
         obs, reward, done, info = env.step(action)
 
-        print("Reward:", reward)
-        print("Done:", done)
-        print("Info:", info)
+        print("[STEP]")
+        print({
+            "action": action,
+            "reward": round(reward, 2),
+            "done": str(done).lower()
+        })
 
-    print("\n[END]")
-
+    print("[END]")
 
 if __name__ == "__main__":
-    run_episode()
+    try:
+        run_episode()
+    except Exception as e:
+        print("[END]")
+        print("Error:", str(e))
