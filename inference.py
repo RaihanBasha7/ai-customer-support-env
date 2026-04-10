@@ -1,32 +1,63 @@
 import os
 import json
-import requests
 from env.environment import CustomerSupportEnv
+from openai import OpenAI
 import os
 import json
 
+
+client = OpenAI(
+    base_url=os.getenv("API_BASE_URL"),
+    api_key=os.getenv("API_KEY")
+)
+
 def call_llm(observation):
     history = observation["conversation"]
-    msg = observation["customer_message"].lower()
+    user_msg = observation["customer_message"]
 
-    if len(history) == 0:
-        if "refund" in msg:
-            return {"action_type": "classify", "content": "refund"}
-        elif "unauthorized" in msg:
-            return {"action_type": "classify", "content": "edge_case"}
-        else:
-            return {"action_type": "classify", "content": "complex"}
+    prompt = f"""
+You are a customer support AI agent.
 
-    elif len(history) == 1:
-        if "refund" in msg:
-            return {"action_type": "reply", "content": "Your refund has been initiated."}
-        elif "unauthorized" in msg:
-            return {"action_type": "escalate", "content": ""}
-        else:
-            return {"action_type": "reply", "content": "We are resolving your issue."}
+Decide the next action based on the conversation.
+Be efficient. Solve in minimum steps. Be polite.
 
-    else:
-        return {"action_type": "close", "content": ""}
+Available actions:
+- classify
+- ask
+- reply
+- escalate
+- close
+
+Return ONLY JSON:
+{{
+  "action_type": "...",
+  "content": "..."
+}}
+
+Customer message:
+{user_msg}
+
+Conversation:
+{history}
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
+            messages=[
+                {"role": "system", "content": "You are a smart support agent."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3
+        )
+
+        text = response.choices[0].message.content.strip()
+
+        return json.loads(text)
+
+    except Exception as e:
+        # fallback (VERY IMPORTANT)
+        return {"action_type": "ask", "content": "fallback"}
 def run_episode():
     env = CustomerSupportEnv()
     obs = env.reset()
