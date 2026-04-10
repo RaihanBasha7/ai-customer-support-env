@@ -16,7 +16,8 @@ client = OpenAI(
     api_key=os.environ.get("API_KEY", ""),
 )
 
-MODEL = os.environ.get("MODEL_NAME", "meta-llama/Llama-3.1-8B-Instruct:cerebras")
+# Use plain model name — their LiteLLM proxy maps this internally
+MODEL = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 
 SYSTEM_PROMPT = """You are an AI customer support agent. 
 At each step you must respond with a single JSON object — nothing else.
@@ -56,14 +57,14 @@ Conversation so far:
 What is your next action? Respond ONLY with valid JSON."""
 
     response = client.chat.completions.create(
-        model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.2,
-        max_tokens=150,
-    )
+    model=MODEL,
+    messages=[
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt},
+    ],
+    temperature=0.2,
+    max_tokens=150,
+)
 
     raw = response.choices[0].message.content.strip()
 
