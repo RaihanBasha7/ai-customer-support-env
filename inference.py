@@ -143,21 +143,31 @@ def run_episode(task_id: int = 0):
 
     print("\n[END]")
     if info.get("final_score") is not None:
-        print(f"Final Score : {info['final_score']}")
-        print("Grading Logs:")
-        for log in info.get("grading_logs", []):
-            print(f"  {log}")
+        return info.get("final_score")        
 
 
 if __name__ == "__main__":
     try:
-        for task_id in range(3):  # 🔥 run at least 3 tasks
-            print(f"\n==============================")
-            print(f"🚀 RUNNING TASK {task_id}")
-            print(f"==============================\n")
+        results = []
+
+        for task_id in range(3):
+            print(f"\nRunning Task {task_id}...\n")
             
-            run_episode(task_id=task_id)
+            score = run_episode(task_id=task_id)
+
+            if score is None:
+                score = 0.01  # safety fallback
+
+            # 🔥 IMPORTANT: structured output for validator
+            output = {
+                "task_id": task_id,
+                "final_score": float(score)
+            }
+
+            print(json.dumps(output))  # 👈 THIS IS KEY
+            results.append(output)
 
     except Exception as e:
-        print("[END]")
-        print(f"Error: {e}")
+        print(json.dumps({
+            "error": str(e)
+        }))
