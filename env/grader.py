@@ -75,7 +75,9 @@ def compute_score(state, task_type, max_turns):
     # -------------------------
     # FINAL SCORE
     # -------------------------
-    final_score = round(max(0.0, min(score, 1.0)), 2)
+    # 🔥 ensure STRICT (0,1)
+    score = max(0.01, min(score, 0.99))
+    final_score = round(score, 2)
 
     return {
         "final_score": final_score,
