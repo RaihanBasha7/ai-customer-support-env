@@ -151,7 +151,13 @@ def run_episode(task_id: int = 0):
 
 if __name__ == "__main__":
     try:
-        run_episode(task_id=0)
+        for task_id in range(3):  # 🔥 run at least 3 tasks
+            print(f"\n==============================")
+            print(f"🚀 RUNNING TASK {task_id}")
+            print(f"==============================\n")
+            
+            run_episode(task_id=task_id)
+
     except Exception as e:
         print("[END]")
         print(f"Error: {e}")
