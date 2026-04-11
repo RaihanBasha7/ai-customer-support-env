@@ -146,6 +146,7 @@ def run_episode(task_id: int = 0):
         while not done:
             steps += 1
 
+            llm_action = call_llm_safe(obs)
             last_action = get_last_action(obs.get("conversation", []))
             message = obs.get("customer_message", "").lower()
 
