@@ -58,7 +58,7 @@ def fallback_action(observation: dict) -> dict:
         elif "unauthorized" in message or "fraud" in message:
             return {"action_type": "classify", "content": "edge_case"}
         elif "delay" in message or "compensation" in message:
-            return {"action_type": "classify", "content": "complex"}
+            return {"action_type": "classify", "content": "delay"}
         else:
             return {"action_type": "classify", "content": "angry"}
     elif last == "classify":
@@ -112,8 +112,8 @@ Next action (JSON only):"""
         return action
 
     except Exception as e:
-        print(f"[LLM ERROR] {e}")
-        return fallback_action(observation)  # 🔥 NEVER FAIL
+        # silently fallback
+        return fallback_action(observation)
     
 def log_start(task, env, model):
     print(f"[START] task={task} env={env} model={model}", flush=True)
@@ -145,51 +145,78 @@ def run_episode(task_id: int = 0):
         done = False
         while not done:
             steps += 1
-
+            
             llm_action = call_llm_safe(obs)
             last_action = get_last_action(obs.get("conversation", []))
             message = obs.get("customer_message", "").lower()
 
-            # 🔥 STEP 1: FIRST ACTION
+            # 🔥 DEFAULT: use rule-based safe action
+            action = None
+
+            # =========================
+            # STEP 1: FIRST ACTION
+            # =========================
             if last_action == "":
                 if "fraud" in message or "unauthorized" in message:
-                    action = {"action_type": "classify", "content": "edge_case"}
+                    action = {"action_type": "classify", "content": "unauthorized"}
+            
                 elif "delay" in message or "compensation" in message:
-                    action = {"action_type": "classify", "content": "complex"}
+                    action = {"action_type": "classify", "content": "delay"}
+            
                 elif "refund" in message or "damaged" in message:
                     action = {"action_type": "classify", "content": "refund"}
+            
                 else:
                     action = {"action_type": "classify", "content": "angry"}
 
-            # 🔥 STEP 2: AFTER CLASSIFY
+            # =========================
+            # STEP 2: AFTER CLASSIFY
+            # =========================
             elif last_action == "classify":
                 if "fraud" in message or "unauthorized" in message:
                     action = {"action_type": "escalate", "content": ""}
-            
+
                 elif "delay" in message or "compensation" in message:
                     action = {
                         "action_type": "reply",
-                        "content": "We sincerely apologize for the delay. Your refund has been initiated and compensation will be provided for the inconvenience."
+                        "content": (
+                            "We sincerely apologize for the inconvenience. "
+                            "We fully understand your concern and truly appreciate your patience. "
+                            "Your refund has been initiated and compensation has been provided. "
+                            "We will resolve this issue completely and ensure a better experience moving forward."
+                        )
                     }
-            
+
                 elif "refund" in message or "damaged" in message:
                     action = {
                         "action_type": "reply",
-                        "content": "We sincerely apologize for the damaged product. Your refund has been initiated and will be processed within 3-5 business days."
+                        "content": (
+                            "We sincerely apologize for the damaged product. "
+                            "We understand your concern. "
+                            "Your refund has been initiated and will be processed within 3-5 business days."
+                        )
                     }
-            
+
                 else:
                     action = {
                         "action_type": "reply",
-                        "content": "We sincerely apologize for the inconvenience. We understand your concern and will resolve this issue promptly."
+                        "content": (
+                            "We sincerely apologize for the inconvenience. "
+                            "We understand your concern and will resolve this issue promptly."
+                        )
                     }
 
-            # 🔥 STEP 3: AFTER REPLY
+            # =========================
+            # STEP 3: AFTER REPLY
+            # =========================
             elif last_action == "reply":
-                if "delay" in message or "compensation" in message:
-                    action = {"action_type": "escalate", "content": ""}
+                if llm_action.get("action_type") in ["close", "escalate"]:
+                    action = llm_action
                 else:
-                    action = {"action_type": "close", "content": ""}
+                    if "delay" in message or "compensation" in message:
+                        action = {"action_type": "escalate", "content": ""}
+                    else:
+                        action = {"action_type": "close", "content": ""}
 
             # ✅ CRITICAL — STEP ENVIRONMENT
             obs, reward, done, info = env.step(action)

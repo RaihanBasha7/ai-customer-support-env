@@ -23,7 +23,7 @@ def step(action: Action):
         "reward": reward,
         "done": done,
 
-        # 🔥 clean output for UI/judges
+        # clean output for UI
         "final_score": info.get("final_score"),
         "logs": info.get("grading_logs", []),
         "reason": info.get("reason", ""),

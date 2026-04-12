@@ -24,7 +24,6 @@ class CustomerSupportEnv:
     "status": "open",
     "classification": None,
     "resolved": False,
-    "confidence": 0.0
 }
 
         self.turn = 0
